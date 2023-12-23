@@ -1,0 +1,47 @@
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import connect from './database/conn.js';
+import student from './router/route.js';
+import registrar from './router/route2.js';
+import admin from './router/route3.js';
+import document from './router/documentroute.js';
+import request from './router/requestdocumentroute.js'
+
+const app = express();
+
+/** middlewares */
+
+app.use(cors());
+app.use(morgan('tiny'));
+app.disable('x-powered-by'); // less hackers know about our stack
+
+
+const port = 8080;
+
+/** HTTP GET Request */
+app.get('/', (req, res) => {
+    res.status(201).json("Home GET Request");
+});
+
+app.use(express.json({ limit: '10mb' }));
+
+/** api routes */
+app.use('/student', student)
+app.use('/registrar', registrar)
+app.use('/admin', admin)
+app.use('/document', document)
+app.use('/request', request)
+
+/** start server only when we have valid connection */
+connect().then(() => {
+    try {
+        app.listen(port, () => {
+            console.log(`Server connected to http://localhost:${port}`);
+        })
+    } catch (error) {
+        console.log('Cannot connect to the server')
+    }
+}).catch(error => {
+    console.log("Invalid database connection...!");
+})
